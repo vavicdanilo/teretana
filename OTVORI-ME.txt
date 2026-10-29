@@ -1,0 +1,41 @@
+FORMA — APLIKACIJA ZA TRENING
+
+Ovaj paket sadrži cijeli izvorni kod aplikacije.
+Radi na Windowsu, macOS-u i Linuxu.
+
+1. Instaliraj Node.js 22 ili noviji sa https://nodejs.org/ ako ga nemaš.
+2. Raspakuj ZIP u folder na svom računaru.
+3. Otvori terminal u raspakovanom folderu koji sadrži package.json.
+4. Pokreni: npm start
+5. U pregledniku unesi adresu: http://localhost:3000
+
+Nije potrebno pokretati npm install: aplikacija nema dodatne pakete.
+Terminal ostavi otvoren dok koristiš aplikaciju. Za zaustavljanje pritisni Ctrl+C.
+Pri sljedećem korišćenju ponovo pokreni npm start.
+
+MOŽE I DVOKLIKOM POSLIJE INSTALACIJE NODE.JS:
+Windows: Pokreni-Windows.bat
+macOS: Pokreni-macOS.command (ako nema pravo pokretanja, koristi terminal).
+Linux: u terminalu pokreni bash pokreni-linux.sh
+
+Ne otvaraj index.html direktno dvoklikom; koristi navedeni lokalni server.
+Ako je port zauzet: npm start -- --port 3001
+Tada u pregledniku koristi http://localhost:3001
+
+TRENING I FOTOGRAFIJE:
+- Vježbe -> Dodaj svoju sliku: postavi fotografiju sprave.
+- Novi trening: unesi naziv, datum, kilažu i ponavljanja po serijama.
+- Napredak: izaberi vježbu i period za grafikon i rekord.
+- Podaci i postavke: izvezi/uvezi kopiju treninga i fotografija.
+
+Podaci ostaju u pregledniku na tvom računaru. Koristi isti preglednik i adresu
+(npr. uvijek localhost:3000) da pristupiš svojoj evidenciji.
+Ako si već unosio podatke na drugoj adresi/uređaju, izvezi rezervnu kopiju
+iz te aplikacije i uvezi je ovdje. ZIP sadrži kod, ne lične podatke preglednika.
+Početni demo je samo primjer; klikni Započni svoj dnevnik za prazan dnevnik.
+
+PROVJERE I DALJE UPUTSTVO:
+npm test
+npm run build
+Detalji su u README.md. Opcioni browser test zahtijeva Playwright/Chromium;
+nije potreban za normalno korišćenje aplikacije.
