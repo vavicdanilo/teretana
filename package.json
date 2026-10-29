@@ -12,6 +12,7 @@
     "start": "node server.mjs",
     "build": "node build.mjs",
     "test": "node --test tests/*.test.js",
-    "test:browser": "node tests/browser.cjs && node tests/custom-browser.cjs"
+    "test:browser": "node tests/browser.cjs && node tests/custom-browser.cjs && node tests/mobile-browser.cjs",
+    "test:mobile": "node tests/mobile-browser.cjs"
   }
 }

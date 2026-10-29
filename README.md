@@ -40,6 +40,14 @@ Za ovaj repozitorijum očekivana adresa je `https://vavicdanilo.github.io/tereta
 
 Treninzi, sopstvene vježbe i fotografije i dalje ostaju u pregledniku. GitHub Pages ih ne sinhronizuje između uređaja. Za prenos sa lokalne verzije na Pages koristi izvoz i uvoz rezervne kopije, jer je to druga adresa aplikacije.
 
+## Mobilni prikaz
+
+Na telefonu i manjim tabletima Forma prikazuje donju navigaciju za Pregled, Treninge, Napredak, Vježbe i Postavke. Dugmad su prilagođena dodiru, tekst i polja za unos su veći, a istorija i rezultati prikazani su kroz kartice sa svim podacima.
+
+Unos treninga i ličnih vježbi otvara se preko cijelog ekrana. Obrazac se pomjera unutar prozora dok dugmad za čuvanje ostaju dostupna; visina se prilagođava dostupnom prostoru. Fotografije sprava prikazuju se cijele, a dodir tačke na grafikonu prikazuje datum i kilažu.
+
+Opciona provjera `npm run test:mobile` koristi isti Playwright/Chromium kao ostale browser provjere. Provjerava šest dimenzija ekrana, vodoravni prikaz, duge nazive, dodavanje vježbe i slike, čuvanje i ponovno učitavanje. `npm run test:browser` uključuje i ove provjere.
+
 ## Razvoj
 
 Potreban je Node.js 22 ili noviji. Aplikacija nema spoljne pakete, bazu podataka niti obavezne API ključeve, pa instalacija zavisnosti nije potrebna.

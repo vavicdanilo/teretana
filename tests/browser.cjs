@@ -13,7 +13,7 @@ const { join } = require('node:path');
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const temp = await mkdtemp(join(tmpdir(), 'forma-check-'));
-  const click = selector => page.locator(selector).first().click();
+  const click = selector => page.locator(`${selector}:visible`).first().click();
   const wait = async fn => { for (let i = 0; i < 50; i++) { if (await fn()) return; await page.waitForTimeout(100); } throw Error('Timed out waiting for expected application state'); };
   const upload = async (selector, payload) => {
     const chooser = page.waitForEvent('filechooser');
@@ -100,12 +100,12 @@ const { join } = require('node:path');
     assert.equal(await page.locator('.equipment-photo img').count(), 0, 'photo deletion persists');
 
     await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(300);
-    await click('.mobile-menu'); await click('[data-nav="overview"]'); await page.waitForTimeout(300);
+    await click('[data-nav="overview"]'); await page.waitForTimeout(300);
     assert.deepEqual(await page.evaluate(() => [innerWidth, document.documentElement.scrollWidth]), [390, 390], 'mobile has no horizontal overflow');
     await click('[data-action="new-workout"]');
     assert.ok(await page.locator('.equipment-preview').isVisible(), 'equipment controls are visible on mobile');
     await page.keyboard.press('Escape'); await click('#confirm-ok'); await page.waitForSelector('.modal', { state: 'detached' });
-    await click('.mobile-menu'); await click('[data-nav="workouts"]');
+    await click('[data-nav="workouts"]');
     await click('[data-workout]'); await click('#delete-workout'); await click('#confirm-ok');
     await page.waitForSelector('.modal', { state: 'detached' });
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('forma.workouts.v1')).workouts.length), 0);

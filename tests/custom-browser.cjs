@@ -9,7 +9,7 @@ const { join } = require('node:path');
   const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});
   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   const temp=await mkdtemp(join(tmpdir(),'forma-custom-'));
-  const click=selector=>page.locator(selector).first().click();
+  const click = selector => page.locator(`${selector}:visible`).first().click();
   const upload=async(selector,payload)=>{const event=page.waitForEvent('filechooser');await click(selector);await(await event).setFiles(payload);};
   const data=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('forma.workouts.v1')));
   try{
@@ -107,7 +107,7 @@ const { join } = require('node:path');
     assert.equal((await data()).customExercises.length,0);assert.equal((await data()).workouts.length,1);
     // Mobile custom-creation controls fit the screen and work without a keyboard shortcut.
     await page.setViewportSize({width:390,height:844});await page.waitForTimeout(300);
-    await click('.mobile-menu');await click('[data-nav="exercises"]');await page.waitForTimeout(300);
+    await click('[data-nav="exercises"]');await page.waitForTimeout(300);
     assert.deepEqual(await page.evaluate(()=>[innerWidth,document.documentElement.scrollWidth]),[390,390]);
     await click('[data-action="new-exercise"]');
     assert.ok(await page.locator('#custom-name').isVisible());await page.keyboard.press('Escape');await page.waitForSelector('.modal',{state:'detached'});
