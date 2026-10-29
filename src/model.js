@@ -1,22 +1,51 @@
-export const EXERCISES = Object.freeze([
-  { id: 'bench-press', name: 'Bench press', group: 'Grudi' },
-  { id: 'squat', name: 'Čučanj', group: 'Noge' },
-  { id: 'deadlift', name: 'Mrtvo dizanje', group: 'Leđa' },
-  { id: 'row', name: 'Veslanje', group: 'Leđa' },
-  { id: 'overhead-press', name: 'Potisak iznad glave', group: 'Ramena' },
-  { id: 'lat-pulldown', name: 'Povlačenje na lat mašini', group: 'Leđa' },
-  { id: 'pull-up', name: 'Zgibovi', group: 'Leđa' },
-  { id: 'incline-dumbbell-press', name: 'Kosi potisak bučicama', group: 'Grudi' },
-  { id: 'lateral-raise', name: 'Lateralno podizanje', group: 'Ramena' },
-  { id: 'biceps-curl', name: 'Biceps pregib', group: 'Ruke' },
-  { id: 'triceps-pushdown', name: 'Triceps na sajli', group: 'Ruke' },
-  { id: 'leg-press', name: 'Leg press', group: 'Noge' },
-  { id: 'romanian-deadlift', name: 'Rumunsko mrtvo dizanje', group: 'Noge' },
-  { id: 'leg-curl', name: 'Pregib za zadnju ložu', group: 'Noge' },
-  { id: 'calf-raise', name: 'Podizanje na prste', group: 'Noge' },
-].map(Object.freeze));
+import { BASE_EXERCISES, EXERCISE_GROUPS } from './catalog.js';
+export { BASE_EXERCISES, EXERCISE_GROUPS } from './catalog.js';
 
-const exerciseIds = new Set(EXERCISES.map((exercise) => exercise.id));
+// Preserve this array's identity: UI and photo modules hold a live reference.
+export const EXERCISES = [...BASE_EXERCISES];
+
+export function normalizeSearch(value) {
+  return String(value ?? '').replace(/[đĐ]/g, 'dj').normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('sr-Latn-ME').trim().replace(/\s+/g, ' ');
+}
+
+export function getExercise(id) {
+  return EXERCISES.find((exercise) => exercise.id === id);
+}
+
+export function getCustomExercises() {
+  return EXERCISES.filter((exercise) => exercise.custom === true).map((exercise) => ({ ...exercise }));
+}
+
+/** Validate one user-defined exercise against a prospective complete catalog. */
+export function createCustomExercise(input, existing = EXERCISES) {
+  if (!input || typeof input !== 'object' || Array.isArray(input) || !Array.isArray(existing)) {
+    throw new Error('Podaci vježbe nijesu ispravni.');
+  }
+  const id = input.id === undefined ? `custom-${globalThis.crypto.randomUUID()}` : input.id;
+  if (typeof id !== 'string' || !/^custom-[A-Za-z0-9][A-Za-z0-9_-]{0,119}$/.test(id)) {
+    throw new Error('Identifikator tvoje vježbe mora počinjati sa custom-.');
+  }
+  const name = typeof input.name === 'string' ? input.name.normalize('NFC').trim().replace(/\s+/g, ' ') : '';
+  if (name.length < 2 || name.length > 100) throw new Error('Naziv vježbe mora imati od 2 do 100 znakova.');
+  const group = typeof input.group === 'string' ? input.group.trim() : '';
+  if (!EXERCISE_GROUPS.includes(group)) throw new Error('Izaberi postojeću mišićnu grupu.');
+  if (existing.some((exercise) => exercise.id === id)) throw new Error('Vježba sa ovim identifikatorom već postoji.');
+  if (existing.some((exercise) => normalizeSearch(exercise.name) === normalizeSearch(name))) {
+    throw new Error('Vježba sa ovim nazivom već postoji. Izaberi je iz biblioteke ili unesi precizniji naziv.');
+  }
+  return { id, name, group, custom: true };
+}
+
+/** Atomically validate and replace custom catalog entries; built-ins remain intact. */
+export function setCustomExercises(list) {
+  if (!Array.isArray(list)) throw new Error('Lista tvojih vježbi nije ispravna.');
+  const next = [];
+  for (const item of list) next.push(Object.freeze(createCustomExercise(item, [...BASE_EXERCISES, ...next])));
+  EXERCISES.splice(0, EXERCISES.length, ...BASE_EXERCISES, ...next);
+  return getCustomExercises();
+}
+
 const round = (number) => Math.round((number + Number.EPSILON) * 100) / 100;
 
 function localDate(date) {
@@ -36,7 +65,7 @@ function numberFromInput(value) {
 }
 
 /** Validate a workout and return a new, normalized object suitable for storage. */
-export function createWorkout(input) {
+export function createWorkout(input, catalog = EXERCISES) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     throw new Error('Podaci treninga nijesu ispravni.');
   }
@@ -54,6 +83,8 @@ export function createWorkout(input) {
   if (!Array.isArray(input.exercises) || input.exercises.length === 0) {
     throw new Error('Dodaj bar jednu vježbu.');
   }
+  if (!Array.isArray(catalog)) throw new Error('Katalog vježbi nije ispravan.');
+  const exerciseIds = new Set(catalog.map((exercise) => exercise.id));
   const exercises = input.exercises.map((exercise, index) => {
     if (!exercise || typeof exercise !== 'object' || !exerciseIds.has(exercise.exerciseId)) {
       throw new Error(`Izaberi ispravnu vježbu na poziciji ${index + 1}.`);
@@ -173,4 +204,4 @@ export const SAMPLE_WORKOUTS = [
     { exerciseId: 'romanian-deadlift', sets: demoSets(60, 10) },
     { exerciseId: 'leg-press', sets: demoSets(110, 12) },
   ] },
-].map(createWorkout);
+].map((workout) => createWorkout(workout));

@@ -23,10 +23,24 @@ Ako je port zauzet: npm start -- --port 3001
 Tada u pregledniku koristi http://localhost:3001
 
 TRENING I FOTOGRAFIJE:
+- Vježbe: pretraži proširenu biblioteku po nazivu i mišićnoj grupi.
+- Ako vježba nedostaje, klikni Dodaj svoju vježbu: unesi naziv i grupu.
+  U novom treningu dostupna je i opcija + Dodaj svoju vježbu… u izboru vježbe.
 - Vježbe -> Dodaj svoju sliku: postavi fotografiju sprave.
 - Novi trening: unesi naziv, datum, kilažu i ponavljanja po serijama.
 - Napredak: izaberi vježbu i period za grafikon i rekord.
-- Podaci i postavke: izvezi/uvezi kopiju treninga i fotografija.
+- Podaci i postavke: izvezi/uvezi kopiju treninga, svojih vježbi i fotografija.
+- Potpun spisak ugrađenih vježbi je u datoteci VJEZBE.md.
+
+SVOJE VJEŽBE I REZERVNE KOPIJE:
+Svojoj vježbi možeš dodati fotografiju sprave i pratiti kilažu kroz treninge
+isto kao za ugrađene vježbe. Čuva se lokalno u istom pregledniku.
+Novi izvoz koristi format rezervne kopije verzije 2 i uključuje svoje vježbe.
+Ova aplikacija uvozi i stare kopije verzije 1 sa treninzima i fotografijama.
+Stara aplikacija ne može uvesti novu kopiju verzije 2; prvo ažuriraj aplikaciju.
+Uvoz nakon potvrde zamjenjuje postojeću evidenciju: prvo izvezi svoju kopiju.
+Stara kopija verzije 1 ne sadrži sopstvene vježbe, pa ih uvoz takve kopije
+ne vraća. Uvoz podržava JSON kopiju do 30 MB.
 
 Podaci ostaju u pregledniku na tvom računaru. Koristi isti preglednik i adresu
 (npr. uvijek localhost:3000) da pristupiš svojoj evidenciji.

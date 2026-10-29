@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createWorkout, volume, stats, exerciseProgress, escapeHtml, SAMPLE_WORKOUTS } from '../src/model.js';
+import { createWorkout, volume, stats, exerciseProgress, escapeHtml, SAMPLE_WORKOUTS,
+  BASE_EXERCISES, EXERCISES, EXERCISE_GROUPS, createCustomExercise, setCustomExercises,
+  getCustomExercises, getExercise, normalizeSearch } from '../src/model.js';
 
 const input = (changes = {}) => ({
   id: 'test-1', name: ' Trening snage ', date: '2026-10-20', notes: ' Bilješka ',
@@ -83,4 +85,100 @@ test('demo workouts are valid, distinctly identified and suitable for progress d
     assert.deepEqual(createWorkout(workout), workout);
   }
   assert.equal(exerciseProgress(SAMPLE_WORKOUTS, 'bench-press').length, 3);
+});
+
+test('expanded catalog preserves permanent IDs, has unique names and valid groups', () => {
+  assert.ok(BASE_EXERCISES.length >= 100);
+  assert.ok(Object.isFrozen(BASE_EXERCISES));
+  assert.equal(new Set(BASE_EXERCISES.map(({ id }) => id)).size, BASE_EXERCISES.length);
+  assert.equal(new Set(BASE_EXERCISES.map(({ name }) => normalizeSearch(name))).size, BASE_EXERCISES.length);
+  for (const item of BASE_EXERCISES) {
+    assert.ok(Object.isFrozen(item));
+    assert.ok(EXERCISE_GROUPS.includes(item.group));
+  }
+  assert.deepEqual(BASE_EXERCISES.slice(0, 15).map(({ id }) => id), [
+    'bench-press', 'squat', 'deadlift', 'row', 'overhead-press', 'lat-pulldown', 'pull-up',
+    'incline-dumbbell-press', 'lateral-raise', 'biceps-curl', 'triceps-pushdown', 'leg-press',
+    'romanian-deadlift', 'leg-curl', 'calf-raise',
+  ]);
+});
+
+test('custom exercises normalize names and require safe IDs and known groups', () => {
+  const created = createCustomExercise({ name: '  Moj   posebni potisak  ', group: 'Grudi' });
+  assert.match(created.id, /^custom-/);
+  assert.equal(created.name, 'Moj posebni potisak');
+  assert.equal(created.custom, true);
+  assert.equal(created.group, 'Grudi');
+  for (const item of [
+    null, [], { id: 'squat', name: 'Moja vježba', group: 'Noge' },
+    { id: 'custom-', name: 'Moja vježba', group: 'Noge' },
+    { id: 'custom-<script>', name: 'Moja vježba', group: 'Noge' },
+    { name: ' ', group: 'Noge' }, { name: 'A', group: 'Noge' },
+    { name: 'A'.repeat(101), group: 'Noge' }, { name: 'Moja vježba', group: 'Nepoznato' },
+  ]) assert.throws(() => createCustomExercise(item));
+});
+
+test('custom duplicates ignore accents, capitalization and repeated whitespace', () => {
+  for (const name of ['  BENCH   PRESS  ', 'cucanj', 'ČUČANJ', 'Biceps PREGIB']) {
+    assert.throws(() => createCustomExercise({ name, group: 'Ruke' }), /nazivom već postoji/);
+  }
+  const first = createCustomExercise({ id: 'custom-first', name: 'Đavolji čekić', group: 'Ruke' });
+  assert.throws(() => createCustomExercise({ id: 'custom-second', name: '  DJAVOLJI  cekic ', group: 'Ruke' }, [first]), /nazivom već postoji/);
+  assert.throws(() => createCustomExercise({ id: 'custom-first', name: 'Drugo ime', group: 'Ruke' }, [first]), /identifikatorom već postoji/);
+});
+
+test('custom refresh preserves the live catalog reference and protects stored entries', () => {
+  const reference = EXERCISES;
+  const source = { id: 'custom-refresh', name: 'Moj potisak unazad', group: 'Ramena' };
+  try {
+    setCustomExercises([source]);
+    assert.equal(EXERCISES, reference);
+    assert.equal(reference.length, BASE_EXERCISES.length + 1);
+    assert.equal(getExercise(source.id).name, source.name);
+    source.name = 'Promijenjen izvor';
+    const copy = getCustomExercises();
+    copy[0].name = 'Promijenjena kopija';
+    assert.equal(getExercise('custom-refresh').name, 'Moj potisak unazad');
+    setCustomExercises([]);
+    assert.equal(EXERCISES, reference);
+    assert.equal(reference.length, BASE_EXERCISES.length);
+    assert.equal(getExercise('custom-refresh'), undefined);
+  } finally { setCustomExercises([]); }
+});
+
+test('invalid catalog replacement leaves the entire current collection unchanged', () => {
+  const existing = { id: 'custom-existing', name: 'Moj uspravni potisak', group: 'Ramena' };
+  try {
+    setCustomExercises([existing]);
+    const before = [...EXERCISES];
+    assert.throws(() => setCustomExercises([
+      { id: 'custom-a', name: 'Nova vježba', group: 'Noge' },
+      { id: 'custom-b', name: 'NOVA VJEZBA', group: 'Noge' },
+    ]), /nazivom već postoji/);
+    assert.deepEqual(EXERCISES, before);
+    assert.throws(() => setCustomExercises([
+      { id: 'custom-repeat', name: 'Prva vježba', group: 'Noge' },
+      { id: 'custom-repeat', name: 'Druga vježba', group: 'Noge' },
+    ]), /identifikatorom već postoji/);
+    assert.deepEqual(EXERCISES, before);
+    assert.throws(() => setCustomExercises(null));
+    assert.deepEqual(EXERCISES, before);
+  } finally { setCustomExercises([]); }
+});
+
+test('workouts validate prospective backup catalogs and pick up live custom changes', () => {
+  const custom = createCustomExercise({ id: 'custom-backup', name: 'Moj potisak na posebnoj spravi', group: 'Grudi' });
+  const workoutInput = input({ exercises: [{ exerciseId: custom.id, sets: [{ weight: 20, reps: 12 }] }] });
+  assert.throws(() => createWorkout(workoutInput), /ispravnu vježbu/);
+  const prospective = [...BASE_EXERCISES, custom];
+  const backupWorkout = createWorkout(workoutInput, prospective);
+  assert.equal(volume(backupWorkout), 240);
+  assert.equal(getExercise(custom.id), undefined);
+  try {
+    setCustomExercises([custom]);
+    assert.deepEqual(createWorkout(workoutInput), backupWorkout);
+    assert.throws(() => createWorkout(workoutInput, BASE_EXERCISES), /ispravnu vježbu/);
+    assert.deepEqual(SAMPLE_WORKOUTS.map((item) => createWorkout(item)), SAMPLE_WORKOUTS);
+  } finally { setCustomExercises([]); }
+  assert.throws(() => createWorkout(workoutInput), /ispravnu vježbu/);
 });

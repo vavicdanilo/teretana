@@ -9,8 +9,9 @@ Aplikacija za lični dnevnik treninga: vježbe, serije, ponavljanja, težine i p
 - Pregled treninga, ukupnog volumena, serija i aktivnosti tokom sedmice.
 - Grafikon napretka po vježbi, izbor perioda, lični rekord i tabela prethodnih rezultata.
 - Pretraga istorije treninga i biblioteke vježbi; gotovi obrasci za gornji dio, donji dio i cijelo tijelo.
+- Biblioteka sa 156 ugrađenih vježbi u 8 mišićnih grupa i dodavanje sopstvenih vježbi. Potpun spisak je u [VJEZBE.md](VJEZBE.md).
 - Lične fotografije sprava povezane sa vježbama, vidljive u biblioteci, unosu treninga i pregledu napretka.
-- Izvoz i uvoz JSON rezervne kopije sa treninzima i fotografijama.
+- Izvoz i uvoz JSON rezervne kopije sa treninzima, sopstvenim vježbama i fotografijama.
 
 ## Pokretanje na svom računaru
 
@@ -19,6 +20,12 @@ Preuzmi kod preko GitHub **Code → Download ZIP** i raspakuj ga. Instaliraj Nod
 Na Windowsu možeš dvokliknuti `Pokreni-Windows.bat`. Na macOS-u koristi `Pokreni-macOS.command` ili terminal, a na Linuxu `bash pokreni-linux.sh`. Ako PowerShell blokira `npm.ps1`, pokreni `npm.cmd start` ili koristi Command Prompt. Potpuno uputstvo je u `OTVORI-ME.txt`.
 
 Ne otvaraj `index.html` direktno dvoklikom — aplikacija koristi lokalni server. Izvorni kod ne uključuje lične treninge i slike iz preglednika; njih prenesi izvozom i uvozom rezervne kopije.
+
+## Dodavanje svoje vježbe
+
+U odjeljku **Vježbe** klikni **Dodaj svoju vježbu**, unesi naziv i izaberi mišićnu grupu. Tokom unosa treninga ista mogućnost je dostupna kao **+ Dodaj svoju vježbu…** u izboru vježbe. Nakon čuvanja dostupna je u biblioteci, unosu treninga i izboru za grafikon napretka.
+
+Fotografiju svoje sprave dodaj opcijom **Dodaj svoju sliku** uz vježbu. I ugrađene i sopstvene vježbe mogu imati fotografiju, serije, kilažu, ponavljanja i istoriju napretka. Sopstvene vježbe pripadaju tvom lokalnom dnevniku; za prenos na drugi uređaj izvezi rezervnu kopiju.
 
 ## Razvoj
 
@@ -43,11 +50,13 @@ Opciona provjera kroz stvarni preglednik koristi Playwright i Chromium, koji su 
 
 ## Podaci
 
-Treninzi se čuvaju u `localStorage`, a fotografije sprava u `IndexedDB`, lokalno u pregledniku na konkretnom uređaju i adresi aplikacije. Nema naloga, serverskog čuvanja ni sinhronizacije između uređaja. Brisanje podataka preglednika može obrisati evidenciju. U odjeljku **Podaci i postavke** izvezi rezervnu kopiju prije promjene uređaja, preglednika ili adrese aplikacije.
+Treninzi i sopstvene vježbe čuvaju se u `localStorage`, a fotografije sprava u `IndexedDB`, lokalno u pregledniku na konkretnom uređaju i adresi aplikacije. Nema naloga, serverskog čuvanja ni sinhronizacije između uređaja. Brisanje podataka preglednika može obrisati evidenciju. U odjeljku **Podaci i postavke** izvezi rezervnu kopiju prije promjene uređaja, preglednika ili adrese aplikacije.
 
 Fotografije mogu biti JPEG, PNG ili WebP do 12 MB. Aplikacija ih smanjuje na najviše 1024 piksela po dužoj strani i čuva kao JPEG. Fotografije se ne šalju serveru.
 
-Uvoz prihvata Forma JSON rezervnu kopiju do 30 MB. Nakon potvrde zamjenjuje postojeće treninge i fotografije; prije uvoza sačuvaj trenutnu kopiju. Neispravni treninzi ili fotografije odbijaju se prije upisa.
+Izvoz pravi Forma JSON rezervnu kopiju **verzije 2**, koja sadrži treninge, sopstvene vježbe i fotografije. Uvoz prihvata kopije do 30 MB, uključujući stare kopije **verzije 1** sa treninzima i fotografijama. Kopiju verzije 2 uvozi u ovu ili noviju verziju aplikacije; stara aplikacija podržava samo verziju 1.
+
+Nakon potvrde uvoz zamjenjuje postojeće treninge, sopstvene vježbe i fotografije; prije uvoza sačuvaj trenutnu kopiju. Neispravne vježbe, treninzi ili fotografije odbijaju se prije upisa. Uvoz stare kopije verzije 1 zamjenjuje evidenciju bez sopstvenih vježbi, jer ih stari format ne sadrži. Postojeći treninzi i fotografije ugrađenih vježbi ostaju povezani pri ažuriranju aplikacije na istoj adresi, bez posebnog uvoza.
 
 Početni demo prikaz jasno je označen i sadrži primjere, koji nijesu stvarni rezultati korisnika i ne izvoze se u rezervnoj kopiji. Dugme **Započni svoj dnevnik** otvara praznu evidenciju; prvi sačuvani trening takođe isključuje demo. Demo se ponovo može uključiti u odjeljku **Podaci i postavke**.
 

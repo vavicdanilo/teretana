@@ -6,11 +6,12 @@ const MAX_SOURCE_BYTES = 12 * 1024 * 1024;
 const MAX_STORED_BYTES = 1.5 * 1024 * 1024;
 const MAX_IMAGE_SIDE = 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const exerciseIds = new Set(EXERCISES.map(({ id }) => id));
 let databasePromise;
 
-function assertExerciseId(exerciseId) {
-  if (!exerciseIds.has(exerciseId)) throw new Error('Izaberi ispravnu vježbu za fotografiju.');
+function assertExerciseId(exerciseId, catalog = EXERCISES) {
+  if (!Array.isArray(catalog) || !catalog.some(({ id }) => id === exerciseId)) {
+    throw new Error('Izaberi ispravnu vježbu za fotografiju.');
+  }
 }
 
 function matchesImageType(bytes, type) {
@@ -155,11 +156,11 @@ function loadImage(source) {
 }
 
 /** Read committed photos. No photo data is placed in localStorage. */
-export async function getPhotos() {
+export async function getPhotos(catalog = EXERCISES) {
   const records = await transact('readonly', (store) => store.getAll(), 'Nije moguće učitati fotografije iz ovog preglednika.');
   const photos = {};
   for (const record of records) {
-    assertExerciseId(record.exerciseId);
+    assertExerciseId(record.exerciseId, catalog);
     // Read the initial dataURL format as well, preserving photos from older sessions.
     photos[record.exerciseId] = record.blob ? await blobToDataURL(record.blob) : validateDataURL(record.dataURL);
   }
@@ -212,14 +213,14 @@ export async function removePhoto(exerciseId) {
 }
 
 /** Validate the full backup before atomically replacing the stored collection. */
-export async function replacePhotos(map) {
+export async function replacePhotos(map, catalog = EXERCISES) {
   if (!map || typeof map !== 'object' || Array.isArray(map)) {
     throw new Error('Zbirka fotografija u rezervnoj kopiji nije ispravna.');
   }
   const entries = Object.entries(map);
   // Complete structural validation before decoding images or opening a write transaction.
   for (const [exerciseId, dataURL] of entries) {
-    assertExerciseId(exerciseId);
+    assertExerciseId(exerciseId, catalog);
     validateDataURL(dataURL);
   }
   for (const [, dataURL] of entries) await loadImage(dataURL);
