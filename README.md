@@ -27,6 +27,19 @@ U odjeljku **Vježbe** klikni **Dodaj svoju vježbu**, unesi naziv i izaberi mi�
 
 Fotografiju svoje sprave dodaj opcijom **Dodaj svoju sliku** uz vježbu. I ugrađene i sopstvene vježbe mogu imati fotografiju, serije, kilažu, ponavljanja i istoriju napretka. Sopstvene vježbe pripadaju tvom lokalnom dnevniku; za prenos na drugi uređaj izvezi rezervnu kopiju.
 
+## Otvaranje preko GitHub Pages linka
+
+Forma može da radi direktno u pregledniku preko GitHub Pages, bez pokretanja terminala ili Node.js na tvom uređaju:
+
+1. U repozitorijumu otvori **Settings → Pages**.
+2. U **Build and deployment → Source** izaberi **Deploy from a branch**.
+3. Izaberi granu **main** i folder **/(root)**, pa klikni **Save**.
+4. Sačekaj uspješno objavljivanje; GitHub će prikazati dugme **Visit site**.
+
+Za ovaj repozitorijum očekivana adresa je `https://vavicdanilo.github.io/teretana/`. Link postaje dostupan tek nakon uključenog Pages-a i uspješnog objavljivanja. HTML, CSS i JavaScript već su u korijenu repozitorijuma; poseban build za ovaj način objavljivanja nije potreban.
+
+Treninzi, sopstvene vježbe i fotografije i dalje ostaju u pregledniku. GitHub Pages ih ne sinhronizuje između uređaja. Za prenos sa lokalne verzije na Pages koristi izvoz i uvoz rezervne kopije, jer je to druga adresa aplikacije.
+
 ## Razvoj
 
 Potreban je Node.js 22 ili noviji. Aplikacija nema spoljne pakete, bazu podataka niti obavezne API ključeve, pa instalacija zavisnosti nije potrebna.
